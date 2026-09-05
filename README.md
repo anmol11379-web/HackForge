@@ -1,49 +1,50 @@
-# PS-8: Settlement Q&A Agent for Fintech Support
+# PS-8: Settlement Q&A Agent for Fintech Support 💳🤖
 
-**Team Name:** Hack Forge  
-**Event:** Origin Hackathon 2026 (Organized by DSC Club VIT Bhopal)  
-**Category:** AI + Development
+**Live Deployment:** [Fintech Solutions on Netlify](https://finetch-solutions.netlify.app/)
 
 ---
 
-## Team Members & Roles
+## 🏆 Hackathon Details
+* **Team Name:** Hack Forge
+* **Event:** Origin Hackathon 2026 (Organized by DSC Club VIT Bhopal)
+* **Category:** AI + Development
+
+## 👥 Team Members & Roles
 
 | Member Name | Registration Number | Core Responsibilities |
 | :--- | :--- | :--- |
-| **Anmol Mishra** | `25BAI11379` | Frontend Development |
-| **Anadi Khare** | `25MIM10218` | User Interface, UX & Graphic Design, Data Management |
-| **Sarvagya Anand** | `25BCE10648` | Backend Development |
-| **Priyansh Vivek** | `25BAI10834` | Management, Content Strategy, PPT & Information Gathering |
+| **Anmol Mishra** | 25BAI11379 | Frontend Development |
+| **Anadi Khare** | 25MIM10218 | User Interface, UX & Graphic Design, Data Management |
+| **Sarvagya Anand** | 25BCE10648 | Backend Development |
+| **Priyansh Vivek** | 25BAI10834 | Management, Content Strategy, PPT & Information Gathering |
 
 ---
 
-## Overview & Problem Statement
-
+## 📖 Overview & Problem Statement
 Businesses utilizing modern payment platforms constantly encounter support queries asking, *"Why wasn't my settlement processed?"* Conventionally, support teams must manually dig through siloed gateway logs, bank batch files, and ledger entries to diagnose a single transaction.
 
 **Settlement Q&A Agent** is an AI-powered fintech support assistant built by Team Hack Forge to automatically ingest transaction identifiers or dates, trace them across multi-system logs, and synthesize plain-English explanations with a transparent exception mechanism.
 
 ---
 
-## System Architecture & Features
-
-* **Cross-System Log Tracer:** Automatically queries and correlates records across gateway, bank, and ledger data stores using a unified transaction ID.
-* **Natural Language Explanation Engine:** Converts raw error codes, payload dumps, and status strings into clear, human-readable answers for support personnel or merchants.
-* **Transparent Exception Handling:** Implements an honest confidence scoring system. If data is mismatched or incomplete, it outputs an explicit exception list rather than hallucinating a resolution.
-
----
-
-## Recommended Tech Stack
-
-* **Reasoning Layer:** Free-tier LLM API (Groq or Gemini) optimized for structured data parsing and natural language generation.
-* **Data Storage:** Self-generated mock CSV files simulating real-world transaction lifecycles.
-* **Interface:** Lightweight web chat or form-based UI built with Streamlit, Flask, or Next.js.
+## ⚙️ System Architecture & Features
+* **🔍 Cross-System Log Tracer:** Automatically queries and correlates records across gateway, bank, and ledger data stores using a unified transaction ID.
+* **🧠 Natural Language Explanation Engine:** Converts raw error codes, payload dumps, and status strings into clear, human-readable answers for support personnel or merchants.
+* **🛡️ Transparent Exception Handling:** Implements an honest confidence scoring system. If data is mismatched or incomplete, it outputs an explicit exception list rather than hallucinating a resolution.
 
 ---
 
-## Mock Data Schema
+## 💻 Tech Stack & Deployment
+* **Reasoning Layer:** Free-tier LLM API (Groq / Gemini) optimized for structured data parsing and natural language generation.
+* **Design:** UI/UX crafted using **Google Stitch Figma Canvas** for a clean, accessible interface.
+* **Frontend:** Web chat/form UI hosted and deployed on **[Netlify](https://finetch-solutions.netlify.app/)**.
+* **Backend:** Core application routing and logic deployed on **Render**.
+* **Data Storage:** Mock CSV files simulating real-world transaction lifecycles.
 
-To test the agent's tracing logic, maintain internal consistency across three synchronized CSV files using matching transaction IDs:
+---
+
+## 🗄️ Mock Data Schema
+To test the agent's tracing logic, the system maintains internal consistency across three synchronized CSV files using matching transaction IDs:
 
 | File Name | Primary Columns | Description |
 | :--- | :--- | :--- |
