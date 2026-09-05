@@ -1,0 +1,217 @@
+@import "tailwindcss";
+
+@layer base {
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+  }
+
+  html, body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #030712;
+    color: #f8fafc;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+  }
+
+  /* Custom scrollbar for data tables and chat */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.6);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+  }
+}
+
+/* Animated Cyber Fintech Grid (Light Blue -> Black -> Dark Green Fade Cycle) */
+.animated-grid-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: #030712;
+}
+
+/* Base stealth grid structure */
+.grid-base {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+/* Light Blue Grid & Ambient Glow */
+.grid-layer-blue {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(56, 189, 248, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.12) 1px, transparent 1px);
+  background-size: 36px 36px;
+  animation: fade-blue-phase 10s ease-in-out infinite;
+}
+
+.glow-layer-blue {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, rgba(56, 189, 248, 0.05) 0%, transparent 70%);
+  animation: fade-blue-phase 10s ease-in-out infinite;
+}
+
+/* Dark Green Grid & Ambient Glow */
+.grid-layer-green {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(16, 185, 129, 0.13) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(16, 185, 129, 0.13) 1px, transparent 1px);
+  background-size: 36px 36px;
+  animation: fade-green-phase 10s ease-in-out infinite;
+}
+
+.glow-layer-green {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 60%, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+  animation: fade-green-phase 10s ease-in-out infinite;
+}
+
+/* Subtle Vignette overlay to give depth */
+.grid-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 40%, rgba(3, 7, 18, 0.6) 100%);
+  pointer-events: none;
+}
+
+/* Keyframes: Light Blue -> Black -> Dark Green -> Black -> Light Blue */
+@keyframes fade-blue-phase {
+  0%, 15% {
+    opacity: 1;
+  }
+  28% {
+    opacity: 0.05;
+  }
+  35%, 72% {
+    opacity: 0;
+  }
+  85% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-green-phase {
+  0%, 35% {
+    opacity: 0;
+  }
+  48% {
+    opacity: 0.5;
+  }
+  58%, 72% {
+    opacity: 1;
+  }
+  85%, 100% {
+    opacity: 0;
+  }
+}
+
+.glass-panel {
+  background: rgba(8, 12, 22, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.glass-panel-subtle {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rgb-glow:focus-within {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.25), inset 0 0 10px rgba(168, 85, 247, 0.15);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.loader {
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-left-color: #3b82f6;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* LLM Output styling */
+.llm-output h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #60a5fa;
+  margin-top: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.llm-output p {
+  margin-bottom: 0.5rem;
+  color: #cbd5e1;
+  line-height: 1.55;
+}
+
+.llm-output ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: #cbd5e1;
+}
+
+.llm-output li {
+  margin-bottom: 0.25rem;
+}
+
+.llm-output strong {
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.exception-box {
+  background: rgba(244, 63, 94, 0.05);
+  border: 1px solid rgba(244, 63, 94, 0.15);
+  border-left: 3px solid rgba(251, 113, 133, 0.5);
+  padding: 0.75rem 0.95rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.5rem;
+  backdrop-filter: blur(4px);
+}
+
+.exception-box h3 {
+  color: #fda4af;
+  margin-top: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}

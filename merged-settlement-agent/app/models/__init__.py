@@ -1,0 +1,1 @@
+"""Domain and Schema models."""

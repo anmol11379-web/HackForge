@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fintech Settlement Q&A Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712; /* Very dark background */
+            color: #f8fafc; 
+        }
+
+        /* RGB Animated Background */
+        .rgb-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background: linear-gradient(120deg, rgba(239, 68, 68, 0.08), rgba(34, 197, 94, 0.08), rgba(59, 130, 246, 0.08), rgba(168, 85, 247, 0.08));
+            background-size: 300% 300%;
+            animation: rgb-shift 12s ease infinite;
+        }
+        @keyframes rgb-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Financial Grid Overlay */
+        .fin-grid {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+            -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+        }
+        
+        /* Custom scrollbar for data tables */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
+        }
+
+        .glass-panel {
+            background: rgba(10, 15, 25, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .rgb-glow:focus-within {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2), inset 0 0 10px rgba(168, 85, 247, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #3b82f6; /* blue-500 */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* HTML formatting from LLM injection */
+        .llm-output h3 { font-size: 1.125rem; font-weight: 600; color: #60a5fa; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .llm-output p { margin-bottom: 0.75rem; color: #cbd5e1; line-height: 1.6; }
+        .llm-output ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #cbd5e1; }
+        .llm-output li { margin-bottom: 0.25rem; }
+        .llm-output strong { color: #f8fafc; font-weight: 600; }
+        
+        .exception-box {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        .exception-box h3 { color: #fca5a5; margin-top: 0; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-200">
+
+    <!-- RGB & Grid Backgrounds -->
+    <div class="rgb-bg"></div>
+    <div class="fin-grid"></div>
+
+    <header class="bg-black/40 backdrop-blur-md border-b border-white/10 p-4 flex items-center justify-between z-10 shadow-lg">
+        <div class="flex items-center space-x-3">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+            </div>
+            <h1 class="text-xl font-bold tracking-tight text-white">SettlementOps <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">AI</span></h1>
+        </div>
+        <div class="text-sm text-slate-400 font-medium">
+            Internal Support Tool | Powered by the FastAPI backend
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative z-10">
+        
+        <!-- Left Panel: AI Agent Interface -->
+        <section class="w-full md:w-1/3 flex flex-col border-r border-white/10 bg-black/20 backdrop-blur-sm z-10 relative shadow-2xl">
+            <div class="p-6 border-b border-white/10">
+                <h2 class="text-lg font-semibold mb-2 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                    Investigate Transaction
+                </h2>
+                <p class="text-sm text-slate-400 mb-4">Ask the agent to trace a transaction ID or analyze a settlement delay. It will cross-reference Gateway, Bank, and Ledger logs.</p>
+                
+                <div class="space-y-2 mb-4">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Suggested Queries:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="setQuery('Why did pay_fail_bank_ifsc_001 fail to settle?')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-full transition-colors border border-slate-700">Bank rejection</button>
+                        <button onclick="setQuery('Status of pay_delay_holiday_001? Is there a delay?')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-full transition-colors border border-slate-700">Holiday delay</button>
+                        <button onclick="setQuery('Investigate pay_conflict_status_001')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-full transition-colors border border-slate-700">Check an anomaly</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6 space-y-6" id="chatContainer">
+                <!-- Welcome Message -->
+                <div class="flex flex-col space-y-2">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-sm">AI</div>
+                        <span class="text-sm font-medium text-slate-300">Agent System</span>
+                    </div>
+                    <div class="glass-panel p-4 rounded-2xl rounded-tl-none text-sm text-slate-300">
+                        Hello! I'm ready to investigate settlement issues. Provide a payment ID (e.g., pay_success_001) and I will trace it across our systems to explain what happened.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 border-t border-white/10 bg-black/40 backdrop-blur-md">
+                <form id="queryForm" class="relative flex items-center rgb-glow rounded-xl transition-all duration-300">
+                    <input type="text" id="userInput" placeholder="E.g., What happened to pay_fail_bank_ifsc_001?" class="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm text-white placeholder-slate-400 focus:outline-none transition-all">
+                    <button type="submit" id="submitBtn" class="absolute right-2 p-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section class="w-full md:w-2/3 flex flex-col bg-transparent relative">
+            <div class="p-4 border-b border-white/10 flex justify-between items-center bg-black/40 backdrop-blur-md">
+                <h2 class="text-sm font-semibold text-slate-200 flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                    Mock Databases (Internal Logs)
+                </h2>
+                <div class="flex space-x-1 bg-black/50 p-1 rounded-lg border border-white/5">
+                    <button onclick="switchTab('gateway')" id="tab-gateway" class="tab-btn px-3 py-1 text-xs font-medium rounded-md bg-blue-600 text-white transition-all">Gateway API</button>
+                    <button onclick="switchTab('bank')" id="tab-bank" class="tab-btn px-3 py-1 text-xs font-medium rounded-md text-slate-400 hover:text-slate-200 transition-all">Bank Recon</button>
+                    <button onclick="switchTab('ledger')" id="tab-ledger" class="tab-btn px-3 py-1 text-xs font-medium rounded-md text-slate-400 hover:text-slate-200 transition-all">Internal Ledger</button>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="flex-1 overflow-auto p-4">
+                <div id="table-container" class="glass-panel rounded-xl overflow-hidden">
+                    <!-- Table will be injected here via JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // --- 1. MOCK DATA GENERATION ---
+        // 5 Specific Scenarios to test agent reasoning:
+        // txn_1001: Perfect Success
+        // txn_1002: Gateway Failure (Insufficient Funds) - never hits bank/ledger
+        // txn_1003: Bank Failure (Invalid Account) - ledger reversed
+        // txn_1004: Delay (Weekend/Holiday) - bank status pending
+        // txn_1005: Anomaly/Exception - missing from bank, but ledger credited
+        
+        const mockDb = {
+            gateway: [
+                { txn_id: 'txn_1001', date: '2023-10-24T10:05:00Z', amount: 150.00, status: 'authorized', gateway_ref: 'gw_auth_991', error_code: 'none' },
+                { txn_id: 'txn_1002', date: '2023-10-24T11:20:00Z', amount: 45.50, status: 'failed', gateway_ref: 'gw_auth_992', error_code: 'insufficient_funds' },
+                { txn_id: 'txn_1003', date: '2023-10-25T09:15:00Z', amount: 300.00, status: 'authorized', gateway_ref: 'gw_auth_993', error_code: 'none' },
+                { txn_id: 'txn_1004', date: '2023-10-27T18:45:00Z', amount: 1200.00, status: 'authorized', gateway_ref: 'gw_auth_994', error_code: 'none' },
+                { txn_id: 'txn_1005', date: '2023-10-28T14:30:00Z', amount: 75.00, status: 'authorized', gateway_ref: 'gw_auth_995', error_code: 'none' }
+            ],
+            bank: [
+                { settlement_id: 'stl_881', txn_id: 'txn_1001', bank_ref: 'b_ref_001', status: 'settled', settlement_date: '2023-10-25', failure_reason: 'none' },
+                // txn_1002 missing intentionally (gateway failed)
+                { settlement_id: 'stl_883', txn_id: 'txn_1003', bank_ref: 'b_ref_003', status: 'failed', settlement_date: '2023-10-26', failure_reason: 'invalid_account_number' },
+                { settlement_id: 'stl_884', txn_id: 'txn_1004', bank_ref: 'b_ref_004', status: 'pending', settlement_date: 'null', failure_reason: 'weekend_processing_delay' }
+                // txn_1005 missing intentionally (anomaly)
+            ],
+            ledger: [
+                { ledger_id: 'ldg_771', txn_id: 'txn_1001', type: 'credit', amount: 150.00, balance: 10150.00, status: 'posted', created_at: '2023-10-24T10:05:05Z' },
+                // txn_1002 missing intentionally
+                { ledger_id: 'ldg_773a', txn_id: 'txn_1003', type: 'credit', amount: 300.00, balance: 10450.00, status: 'posted', created_at: '2023-10-25T09:15:05Z' },
+                { ledger_id: 'ldg_773b', txn_id: 'txn_1003', type: 'debit', amount: 300.00, balance: 10150.00, status: 'reversed', created_at: '2023-10-26T14:00:00Z' }, // Reversal entry
+                { ledger_id: 'ldg_774', txn_id: 'txn_1004', type: 'credit', amount: 1200.00, balance: 11350.00, status: 'posted', created_at: '2023-10-27T18:45:05Z' },
+                { ledger_id: 'ldg_775', txn_id: 'txn_1005', type: 'credit', amount: 75.00, balance: 11425.00, status: 'posted', created_at: '2023-10-28T14:30:05Z' } // Anomaly: posted but no bank record
+            ]
+        };
+
+        // --- 2. UI LOGIC FOR DATA VIEWER ---
+        let currentTab = 'gateway';
+
+        function renderTable() {
+            const container = document.getElementById('table-container');
+            const data = mockDb[currentTab];
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="p-8 text-center text-slate-500">No records found.</div>';
+                return;
+            }
+
+            const headers = Object.keys(data[0]);
+            
+            let html = `<table class="w-full text-left border-collapse text-sm">
+                <thead>
+                    <tr class="bg-black/40 border-b border-white/10 backdrop-blur-sm">`;
+            
+            headers.forEach(h => {
+                html += `<th class="p-3 font-semibold text-slate-300 capitalize">${h.replace('_', ' ')}</th>`;
+            });
+            
+            html += `</tr></thead><tbody>`;
+            
+            data.forEach((row, i) => {
+                html += `<tr class="border-b border-white/5 hover:bg-white/10 transition-colors ${i % 2 === 0 ? 'bg-black/20' : 'bg-transparent'}">`;
+                headers.forEach(h => {
+                    let cellValue = row[h];
+                    let cellClass = "p-3 text-slate-400";
+                    
+                    // Status styling
+                    if (h === 'status' || h === 'error_code' || h === 'failure_reason') {
+                        if (cellValue === 'authorized' || cellValue === 'settled' || cellValue === 'posted' || cellValue === 'none') {
+                            cellValue = `<span class="px-2 py-1 bg-green-500/10 text-green-400 rounded text-xs font-medium">${cellValue}</span>`;
+                        } else if (cellValue === 'failed' || cellValue === 'reversed' || cellValue.includes('invalid') || cellValue.includes('insufficient')) {
+                            cellValue = `<span class="px-2 py-1 bg-red-500/10 text-red-400 rounded text-xs font-medium">${cellValue}</span>`;
+                        } else if (cellValue === 'pending' || cellValue.includes('delay')) {
+                            cellValue = `<span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 rounded text-xs font-medium">${cellValue}</span>`;
+                        }
+                    }
+                    if(h === 'txn_id') {
+                        cellClass += " font-mono text-blue-300";
+                    }
+
+                    html += `<td class="${cellClass}">${cellValue}</td>`;
+                });
+                html += `</tr>`;
+            });
+            
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('text-slate-400');
+            });
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            activeBtn.classList.remove('text-slate-400');
+            activeBtn.classList.add('bg-blue-600', 'text-white');
+            renderTable();
+        }
+
+        // Initialize table
+        renderTable();
+
+        function setQuery(text) {
+            document.getElementById('userInput').value = text;
+            document.getElementById('userInput').focus();
+        }
+
+
+        // --- STREAMING_CHUNK:Agent Logic and LLM Integration... ---
+        
+        const chatContainer = document.getElementById('chatContainer');
+        const queryForm = document.getElementById('queryForm');
+        const userInput = document.getElementById('userInput');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function appendMessage(role, content, isHtml = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'flex flex-col space-y-2 mb-6 opacity-0 translate-y-4 transition-all duration-500 ease-out';
+            
+            let avatar = role === 'user' 
+                ? '<div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center font-bold text-sm shadow-md">You</div>'
+                : '<div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-bold text-sm shadow-[0_0_10px_rgba(139,92,246,0.5)]">AI</div>';
+            
+            let title = role === 'user' ? 'You' : 'Agent System';
+            
+            let bgClass = role === 'user' ? 'bg-slate-800/80 border border-white/5 backdrop-blur-md' : 'glass-panel';
+            let shapeClass = role === 'user' ? 'rounded-tr-none' : 'rounded-tl-none';
+            let contentClass = role === 'user' ? 'text-slate-200' : 'text-slate-300 llm-output';
+
+            msgDiv.innerHTML = `
+                <div class="flex items-center space-x-2 ${role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}">
+                    ${avatar}
+                    <span class="text-sm font-medium text-slate-400">${title}</span>
+                </div>
+                <div class="${bgClass} p-5 rounded-2xl ${shapeClass} text-sm ${contentClass} shadow-lg max-w-[95%] ${role === 'user' ? 'self-end' : 'self-start'}">
+                    ${isHtml ? content : escapeHTML(content)}
+                </div>
+            `;
+            chatContainer.appendChild(msgDiv);
+            
+            // Trigger animation
+            setTimeout(() => {
+                msgDiv.classList.remove('opacity-0', 'translate-y-4');
+            }, 50);
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return msgDiv; // Return reference for later updates
+        }
+
+        function appendLoading() {
+            const msgDiv = document.createElement('div');
+            msgDiv.id = 'loadingIndicator';
+            msgDiv.className = 'flex flex-col space-y-2 mb-6';
+            msgDiv.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-bold text-sm shadow-[0_0_10px_rgba(139,92,246,0.5)]">AI</div>
+                    <span class="text-sm font-medium text-slate-400">Agent System</span>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl rounded-tl-none self-start flex items-center space-x-3 text-slate-400">
+                    <div class="loader"></div>
+                    <span>Analyzing question and financial records...</span>
+                </div>
+            `;
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function removeLoading() {
+            const loader = document.getElementById('loadingIndicator');
+            if(loader) loader.remove();
+        }
+
+        function escapeHTML(str) {
+            return String(str || '').replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        function renderMarkdownToHtml(text) {
+            if (!text) return '';
+
+            // --- Safety pass: strip any stray HTML / <br> the backend may emit ---
+            text = text.replace(/<br\s*\/?>/gi, '\n');
+            text = text.replace(/<[^>]+>/g, '');
+
+            // --- Inline markdown ---
+            let escaped = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            // Bold: **text**
+            escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            // Italic: *text* (not touching **)
+            escaped = escaped.replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+            // Inline code: `text`
+            escaped = escaped.replace(/`([^`]+)`/g, '<code class="bg-slate-700/60 px-1.5 py-0.5 rounded text-blue-300 font-mono text-xs">$1</code>');
+
+            // --- Block rendering ---
+            const lines = escaped.split('\n');
+            let output = [];
+            let inList = false;
+
+            const closeList = () => {
+                if (inList) { output.push('</ul>'); inList = false; }
+            };
+
+            for (let line of lines) {
+                const trimmed = line.trim();
+
+                // Skip pipe-table separator rows (|---|---|)
+                if (/^\s*\|[-| :]+\|\s*$/.test(trimmed)) continue;
+
+                // Convert remaining pipe-table rows to a simple bullet
+                if (/^\|.*\|$/.test(trimmed)) {
+                    const cells = trimmed.replace(/^\||\|$/g, '').split('|').map(c => c.trim()).filter(Boolean);
+                    if (cells.length) {
+                        closeList();
+                        output.push(`<p class="my-1.5 text-slate-300">${cells.join(' &nbsp;·&nbsp; ')}</p>`);
+                    }
+                    continue;
+                }
+
+                // Headings: ### or **Title:**
+                if (trimmed.startsWith('### ')) {
+                    closeList();
+                    output.push(`<h4 class="text-sm font-bold text-slate-100 mt-3 mb-1">${trimmed.slice(4)}</h4>`);
+                    continue;
+                }
+                if (trimmed.startsWith('## ')) {
+                    closeList();
+                    output.push(`<h3 class="text-sm font-bold text-white mt-4 mb-1">${trimmed.slice(3)}</h3>`);
+                    continue;
+                }
+
+                // Bullet list items: starts with -, •, or *
+                if (/^[-•*]\s/.test(trimmed)) {
+                    if (!inList) { output.push('<ul class="list-disc pl-5 my-2 space-y-1.5 text-slate-300">'); inList = true; }
+                    output.push(`<li>${trimmed.replace(/^[-•*]\s*/, '')}</li>`);
+                    continue;
+                }
+
+                // Numbered items: 1. text
+                const numMatch = trimmed.match(/^(\d+)\.\s+(.*)/);
+                if (numMatch) {
+                    closeList();
+                    output.push(`<p class="my-1.5 pl-2"><strong>${numMatch[1]}.</strong> ${numMatch[2]}</p>`);
+                    continue;
+                }
+
+                // Blank line
+                if (trimmed.length === 0) {
+                    closeList();
+                    output.push('<div class="my-1"></div>');
+                    continue;
+                }
+
+                // Regular paragraph
+                closeList();
+                output.push(`<p class="my-2 leading-relaxed">${trimmed}</p>`);
+            }
+
+            closeList();
+            return output.join('');
+        }
+
+        // Search logic to extract relevant data for the LLM context
+        function extractRelevantData(query) {
+            // Find explicit txn IDs
+            const match = query.match(/txn_\d+/i);
+            const extractedId = match ? match[0].toLowerCase() : null;
+
+            let contextData = {
+                target_transaction: extractedId || 'Unknown/Multiple',
+                gateway_logs: [],
+                bank_records: [],
+                ledger_entries: []
+            };
+
+            if (extractedId) {
+                // Filter exact matches
+                contextData.gateway_logs = mockDb.gateway.filter(r => r.txn_id === extractedId);
+                contextData.bank_records = mockDb.bank.filter(r => r.txn_id === extractedId);
+                contextData.ledger_entries = mockDb.ledger.filter(r => r.txn_id === extractedId);
+                
+                // Highlight the searched ID in the UI tables (visual feedback)
+                highlightTableRows(extractedId);
+            } else {
+                // If no specific ID, provide the whole DB so LLM can suggest available IDs
+                contextData.gateway_logs = mockDb.gateway;
+                contextData.bank_records = mockDb.bank;
+                contextData.ledger_entries = mockDb.ledger;
+            }
+
+            return contextData;
+        }
+
+        function highlightTableRows(txnId) {
+            // Just a visual cue that the agent is looking at this data
+            document.querySelectorAll('#table-container tr').forEach(row => {
+                if(row.innerText.includes(txnId)) {
+                    row.classList.add('bg-blue-900/40', 'shadow-[inset_0_0_15px_rgba(59,130,246,0.3)]');
+                    row.classList.remove('bg-black/20', 'bg-transparent');
+                } else {
+                    row.classList.remove('bg-blue-900/40', 'shadow-[inset_0_0_15px_rgba(59,130,246,0.3)]');
+                }
+            });
+        }
+
+        async function askGemini(query) {
+            // The browser calls our backend. The backend owns the API key and AI provider.
+            const response = await fetch('/api/v1/settlements/query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.detail || 'The settlement backend rejected the request.');
+            }
+
+            // If this is a general question (e.g. "who can use this ai", "what is ai")
+            if (result.is_general_query) {
+                const headline = escapeHTML(result.headline_status || 'Fintech AI Assistant');
+                const formattedSummary = renderMarkdownToHtml(result.plain_english_summary);
+                const merchantActions = (result.next_actions_merchant || [])
+                    .map(item => `<li class="flex items-start space-x-2"><span class="text-blue-400">👉</span><span>${escapeHTML(String(item))}</span></li>`).join('');
+                const supportActions = (result.next_actions_support || [])
+                    .map(item => `<li class="flex items-start space-x-2"><span class="text-purple-400">🛡️</span><span>${escapeHTML(String(item))}</span></li>`).join('');
+
+                return `
+                    <div class="general-qa-response space-y-4">
+                        <div class="flex items-center space-x-2 border-b border-blue-500/20 pb-2">
+                            <h3 class="text-base font-bold bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">${headline}</h3>
+                        </div>
+                        <div class="plain-english-text text-slate-200 text-sm leading-relaxed">
+                            ${formattedSummary}
+                        </div>
+                        ${merchantActions || supportActions ? `
+                        <div class="mt-3 p-3.5 rounded-xl bg-slate-900/60 border border-slate-700/60">
+                            <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">💡 Recommended Questions & Actions</h4>
+                            ${merchantActions ? `<ul class="space-y-1.5 text-xs text-slate-300 mb-2">${merchantActions}</ul>` : ''}
+                            ${supportActions ? `<ul class="space-y-1.5 text-xs text-slate-300">${supportActions}</ul>` : ''}
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            // Transaction trace response
+            const status = escapeHTML(result.overall_status || 'UNKNOWN');
+            const headline = escapeHTML(result.headline_status || `Settlement Status: ${status}`);
+            const summary = renderMarkdownToHtml(result.plain_english_summary || 'No explanation returned.');
+            const reason = result.delay_or_failure_reason ? escapeHTML(result.delay_or_failure_reason) : null;
+            const confidence = Number(result.confidence_score ?? 0).toFixed(2);
+            const merchantActions = (result.next_actions_merchant || [])
+                .map(item => `<li>${escapeHTML(String(item))}</li>`).join('');
+            const supportActions = (result.next_actions_support || [])
+                .map(item => `<li>${escapeHTML(String(item))}</li>`).join('');
+
+            return `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                        <h3 class="font-bold text-sm text-white">${headline}</h3>
+                        <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">${status}</span>
+                    </div>
+                    <div class="text-slate-200 text-sm">
+                        ${summary}
+                    </div>
+                    ${reason ? `<div class="text-xs text-amber-300/90 bg-amber-950/30 p-2.5 rounded-lg border border-amber-500/20"><strong>Reason:</strong> ${reason}</div>` : ''}
+                    <div class="exception-box mt-3 p-3 rounded-xl bg-slate-900/50 border border-slate-700/50">
+                        <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+                            <span>Confidence Score: <strong class="text-slate-200">${confidence}</strong></span>
+                            ${result.utr ? `<span>UTR: <code class="text-emerald-400 font-mono">${escapeHTML(result.utr)}</code></span>` : ''}
+                        </div>
+                        ${merchantActions ? `<p class="text-xs font-semibold text-slate-300 mt-2">Merchant actions</p><ul class="list-disc pl-4 text-xs text-slate-300 space-y-1">${merchantActions}</ul>` : ''}
+                        ${supportActions ? `<p class="text-xs font-semibold text-slate-300 mt-2">Support actions</p><ul class="list-disc pl-4 text-xs text-slate-300 space-y-1">${supportActions}</ul>` : ''}
+                    </div>
+                </div>
+            `;
+
+        }
+
+        // Form Submit Handler
+        queryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = userInput.value.trim();
+            if (!query) return;
+
+            // UI Updates
+            userInput.value = '';
+            submitBtn.disabled = true;
+            appendMessage('user', query);
+            appendLoading();
+
+            try {
+                const responseHtml = await askGemini(query);
+                removeLoading();
+                appendMessage('agent', responseHtml, true);
+            } catch (error) {
+                removeLoading();
+                appendMessage('agent', `<h3>Error</h3><p class="text-red-400">${escapeHTML(error.message || 'Backend request failed.')}</p>`, true);
+            } finally {
+                submitBtn.disabled = false;
+                userInput.focus();
+            }
+        });
+
+    </script>
+</body>
+</html>
